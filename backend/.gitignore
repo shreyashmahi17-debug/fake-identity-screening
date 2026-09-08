@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+venv/
+.env
+*.egg-info/
+
+# Temp files created by backend
+temp_document_*
+temp_reference_*
+temp_ela.jpg
