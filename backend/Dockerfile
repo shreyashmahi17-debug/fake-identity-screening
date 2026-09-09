@@ -1,6 +1,6 @@
 FROM python:3.11-slim
 
-# Install system dependencies (runs as root inside Docker)
+# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     tesseract-ocr \
     tesseract-ocr-eng \
@@ -12,16 +12,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Set working directory
 WORKDIR /app
 
-# Install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# Copy app code
 COPY . .
 
-# Use diagnostic startup script so errors are visible in Render logs
-CMD python start.py
+# Use unbuffered Python so all print() output shows immediately in Render logs
+ENV PYTHONUNBUFFERED=1
+
+CMD ["python", "start.py"]
