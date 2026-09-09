@@ -215,7 +215,7 @@ function App() {
     formData.append("reference_file", referenceFile);
 
     try {
-      const backendUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
+      const backendUrl = import.meta.env.VITE_API_URL || "https://fake-identity-screening.onrender.com";
       const response = await fetch(`${backendUrl}/ocr`, {
         method: "POST",
         body: formData,
