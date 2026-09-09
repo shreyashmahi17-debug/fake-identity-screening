@@ -23,5 +23,5 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Copy app code
 COPY . .
 
-# Use shell form so $PORT env variable gets expanded by Render
-CMD uvicorn main:app --host 0.0.0.0 --port ${PORT:-10000}
+# Use diagnostic startup script so errors are visible in Render logs
+CMD python start.py
