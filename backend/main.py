@@ -2,6 +2,7 @@ from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 
 from services.ocr import extract_text_with_confidence
+from services.document_classifier import detect_document_type
 from services.data_extraction import extract_fields
 from services.document_analysis import analyze_document
 from services.tampering_detection import detect_tampering
@@ -53,6 +54,8 @@ async def ocr_document(
             document_path
         )
 
+        document_type = detect_document_type(text)
+
         # Structured fields
         fields = extract_fields(text)
 
@@ -95,7 +98,8 @@ async def ocr_document(
             "tampering_analysis": tampering,
             "face_verification": face_result,
 
-            "risk_assessment": risk
+            "risk_assessment": risk,
+            "document_type": document_type,
         }
 
     finally:

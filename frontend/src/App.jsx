@@ -49,7 +49,7 @@ function ScoreRing({ score }) {
   useEffect(() => {
     // Delay slightly so the transition plays on mount
     const id = setTimeout(() => {
-      const filled = ((score / 100) * circumference);
+      const filled = (score / 100) * circumference;
       setDashOffset(circumference - filled);
     }, 120);
     return () => clearTimeout(id);
@@ -58,12 +58,7 @@ function ScoreRing({ score }) {
   return (
     <div className="score-circle">
       <svg viewBox="0 0 100 100" width="110" height="110">
-        <circle
-          className="ring-track"
-          cx="50"
-          cy="50"
-          r={radius}
-        />
+        <circle className="ring-track" cx="50" cy="50" r={radius} />
         <circle
           className="ring-fill"
           cx="50"
@@ -204,9 +199,12 @@ function App() {
 
     for (let i = 2; i <= 6; i++) {
       timers.push(
-        setTimeout(() => {
-          setProcessingStep(i);
-        }, (i - 1) * 500)
+        setTimeout(
+          () => {
+            setProcessingStep(i);
+          },
+          (i - 1) * 500,
+        ),
       );
     }
 
@@ -215,14 +213,25 @@ function App() {
     formData.append("reference_file", referenceFile);
 
     try {
-      const backendUrl = import.meta.env.VITE_API_URL || "https://fake-identity-screening.onrender.com";
+      const backendUrl =
+        import.meta.env.VITE_API_URL ||
+        "https://fake-identity-screening.onrender.com";
+
+      // 90-second timeout — handles Render free-tier cold start (~30-60s)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 90000);
+
       const response = await fetch(`${backendUrl}/ocr`, {
         method: "POST",
         body: formData,
+        signal: controller.signal,
       });
 
+      clearTimeout(timeoutId);
+
       if (!response.ok) {
-        throw new Error("Backend request failed.");
+        const errText = await response.text();
+        throw new Error(`Server error ${response.status}: ${errText}`);
       }
 
       const data = await response.json();
@@ -235,16 +244,21 @@ function App() {
         setLoading(false);
         // Scroll to results
         setTimeout(() => {
-          resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+          resultRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
         }, 100);
       }, 500);
     } catch (err) {
       timers.forEach(clearTimeout);
       setLoading(false);
       setProcessingStep(0);
-      setError(
-        "Unable to connect to backend. Please make sure the FastAPI server is running on port 8000."
-      );
+      const msg =
+        err.name === "AbortError"
+          ? "Request timed out. The backend is waking up — please wait 30 seconds and try again."
+          : `Connection error: ${err.message}. Backend URL: ${import.meta.env.VITE_API_URL || "https://fake-identity-screening.onrender.com"}`;
+      setError(msg);
     }
   };
 
@@ -262,8 +276,8 @@ function App() {
       tampering.ela_score > 10
         ? "HIGH"
         : tampering.ela_score > 5
-        ? "MEDIUM"
-        : "LOW";
+          ? "MEDIUM"
+          : "LOW";
 
     const report = `
 FAKE IDENTITY & DOCUMENT SCREENING SYSTEM
@@ -393,11 +407,6 @@ END OF REPORT
               <span>AI-Powered Identity Risk Analysis</span>
             </div>
           </div>
-
-          <div className="header-status">
-            <span className="status-dot"></span>
-            Prototype Active
-          </div>
         </div>
       </header>
 
@@ -413,9 +422,9 @@ END OF REPORT
           </h2>
 
           <p>
-            Upload a document and reference face to perform OCR,
-            document analysis, tampering checks, face comparison
-            and risk assessment — all in one go.
+            Upload a document and reference face to perform OCR, document
+            analysis, tampering checks, face comparison and risk assessment —
+            all in one go.
           </p>
         </section>
 
@@ -534,8 +543,8 @@ END OF REPORT
                     processingStep > step.number
                       ? "step completed"
                       : processingStep === step.number
-                      ? "step active"
-                      : "step"
+                        ? "step active"
+                        : "step"
                   }
                 >
                   <div className="step-icon">
@@ -581,8 +590,8 @@ END OF REPORT
                   {result.risk_assessment.risk_level === "HIGH"
                     ? "High Risk Document"
                     : result.risk_assessment.risk_level === "MEDIUM"
-                    ? "Further Review Required"
-                    : "Low Risk Document"}
+                      ? "Further Review Required"
+                      : "Low Risk Document"}
                 </h2>
                 <p>{getRiskMessage()}</p>
               </div>
@@ -602,7 +611,7 @@ END OF REPORT
               <div
                 className={`signal-card ${getSignalClass(
                   result.ocr_confidence,
-                  "higher_is_better"
+                  "higher_is_better",
                 )}`}
               >
                 <span>OCR CONFIDENCE</span>
@@ -615,7 +624,7 @@ END OF REPORT
                   result.face_verification.status === "success"
                     ? getSignalClass(
                         result.face_verification.similarity_score,
-                        "higher_is_better"
+                        "higher_is_better",
                       )
                     : ""
                 }`}
@@ -635,7 +644,7 @@ END OF REPORT
               <div
                 className={`signal-card ${getSignalClass(
                   getTamperingLabel(),
-                  "string"
+                  "string",
                 )}`}
               >
                 <span>TAMPERING SIGNAL</span>
@@ -646,7 +655,7 @@ END OF REPORT
               <div
                 className={`signal-card ${getSignalClass(
                   result.data_consistency.status,
-                  "string"
+                  "string",
                 )}`}
               >
                 <span>DATA CONSISTENCY</span>
@@ -674,7 +683,8 @@ END OF REPORT
                   {[
                     {
                       label: "Image Quality",
-                      value: result.risk_assessment.risk_breakdown.image_quality,
+                      value:
+                        result.risk_assessment.risk_breakdown.image_quality,
                       max: 10,
                       weight: "10%",
                     },
@@ -739,9 +749,15 @@ END OF REPORT
                 <div className="info-list">
                   {[
                     { label: "Name", value: result.fields.name },
-                    { label: "Date of Birth", value: result.fields.date_of_birth },
+                    {
+                      label: "Date of Birth",
+                      value: result.fields.date_of_birth,
+                    },
                     { label: "Gender", value: result.fields.gender },
-                    { label: "Document Number", value: result.fields.document_number },
+                    {
+                      label: "Document Number",
+                      value: result.fields.document_number,
+                    },
                   ].map(({ label, value }) => (
                     <div className="info-row" key={label}>
                       <span>{label}</span>
@@ -822,9 +838,7 @@ END OF REPORT
 
                 <div className="verification-box">
                   <strong>{getTamperingLabel()}</strong>
-                  <span>
-                    ELA Score: {result.tampering_analysis.ela_score}
-                  </span>
+                  <span>ELA Score: {result.tampering_analysis.ela_score}</span>
                 </div>
               </div>
 
@@ -888,8 +902,8 @@ END OF REPORT
 
             <div className="disclaimer">
               <strong>Prototype Disclaimer:</strong> This system provides
-              preliminary risk screening only. It is not a legal determination of
-              document authenticity or final identity verification. Manual
+              preliminary risk screening only. It is not a legal determination
+              of document authenticity or final identity verification. Manual
               verification is recommended for high-risk cases.
             </div>
           </section>
