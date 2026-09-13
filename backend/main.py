@@ -19,10 +19,17 @@ app = FastAPI(title="Fake Document Screening System")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
-    allow_methods=["*"],
+    allow_origins=[
+        "*",
+        "https://*.vercel.app",
+        "http://localhost:5173",
+        "http://localhost:3000"
+    ],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
+    expose_headers=["*"],
+    max_age=3600,
 )
 
 
@@ -30,8 +37,28 @@ app.add_middleware(
 def home():
     return {
         "status": "success",
-        "message": "Fake Document Screening API is running!"
+        "message": "Fake Document Screening API is running!",
+        "version": "1.0.0",
+        "endpoints": {
+            "health": "/",
+            "ocr": "/ocr (POST)"
+        }
     }
+
+
+@app.get("/health")
+def health_check():
+    """Health check endpoint for monitoring"""
+    return {
+        "status": "healthy",
+        "service": "Fake Document Screening API"
+    }
+
+
+@app.options("/ocr")
+async def ocr_options():
+    """Preflight request handler for CORS"""
+    return {"status": "ok"}
 
 
 @app.post("/ocr")
