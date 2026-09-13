@@ -2,13 +2,13 @@ from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 
 from services.ocr import extract_text_with_confidence
-from services.document_classifier import detect_document_type
-from services.data_extraction import extract_fields
-from services.document_analysis import analyze_document
+from services.document_classifier_fixed import detect_document_type
+from services.data_extraction_fixed import extract_fields
+from services.document_analysis_fixed import analyze_document
 from services.tampering_detection import detect_tampering
 from services.risk_engine import calculate_risk
 from services.face_verification import verify_faces
-from services.data_consistency import check_consistency
+from services.data_consistency_fixed import check_consistency
 
 import shutil
 import os
