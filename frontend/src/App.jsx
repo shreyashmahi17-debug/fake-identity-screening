@@ -242,24 +242,30 @@ function App() {
         import.meta.env.VITE_API_URL ||
         "https://fake-identity-screening.onrender.com";
 
-      // 90-second timeout — handles Render free-tier cold start (~30-60s)
+      console.log("🔗 Connecting to backend:", backendUrl);
+
+      // 120-second timeout — handles Render free-tier cold start (~30-60s)
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 90000);
+      const timeoutId = setTimeout(() => controller.abort(), 120000);
 
       const response = await fetch(`${backendUrl}/ocr`, {
         method: "POST",
         body: formData,
         signal: controller.signal,
+        mode: 'cors',
+        credentials: 'omit',
       });
 
       clearTimeout(timeoutId);
 
       if (!response.ok) {
         const errText = await response.text();
+        console.error("❌ Backend error:", response.status, errText);
         throw new Error(`Server error ${response.status}: ${errText}`);
       }
 
       const data = await response.json();
+      console.log("✅ Analysis complete:", data);
 
       timers.forEach(clearTimeout);
       setProcessingStep(7);
@@ -279,10 +285,18 @@ function App() {
       timers.forEach(clearTimeout);
       setLoading(false);
       setProcessingStep(0);
-      const msg =
-        err.name === "AbortError"
-          ? "Request timed out. The backend is waking up — please wait 30 seconds and try again."
-          : `Connection error: ${err.message}. Backend URL: ${import.meta.env.VITE_API_URL || "https://fake-identity-screening.onrender.com"}`;
+      
+      console.error("❌ Connection error:", err);
+      
+      let msg = "";
+      if (err.name === "AbortError") {
+        msg = "⏱️ Request timed out. The backend is waking up from sleep (Render free tier). Please wait 30 seconds and try again.";
+      } else if (err.message.includes("Failed to fetch") || err.message.includes("NetworkError")) {
+        msg = `🔌 Network error: Cannot connect to backend. Please check:\n1. Backend is running at: ${import.meta.env.VITE_API_URL || "https://fake-identity-screening.onrender.com"}\n2. CORS is enabled\n3. You have internet connection\n\nError: ${err.message}`;
+      } else {
+        msg = `❌ Error: ${err.message}\n\nBackend URL: ${import.meta.env.VITE_API_URL || "https://fake-identity-screening.onrender.com"}`;
+      }
+      
       setError(msg);
     }
   };

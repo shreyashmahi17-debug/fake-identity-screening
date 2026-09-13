@@ -37,8 +37,28 @@ app.add_middleware(
 def home():
     return {
         "status": "success",
-        "message": "Fake Document Screening API is running!"
+        "message": "Fake Document Screening API is running!",
+        "version": "1.0.0",
+        "endpoints": {
+            "health": "/",
+            "ocr": "/ocr (POST)"
+        }
     }
+
+
+@app.get("/health")
+def health_check():
+    """Health check endpoint for monitoring"""
+    return {
+        "status": "healthy",
+        "service": "Fake Document Screening API"
+    }
+
+
+@app.options("/ocr")
+async def ocr_options():
+    """Preflight request handler for CORS"""
+    return {"status": "ok"}
 
 
 @app.post("/ocr")
