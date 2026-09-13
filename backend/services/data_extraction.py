@@ -20,8 +20,13 @@ def extract_fields(text):
     # NAME
     # -------------------------
 
+    # NOTE: word-continuation uses [ \t] instead of \s so it can never
+    # cross a line break. Using \s here was the root cause of names
+    # picking up garbage tokens from unrelated OCR lines (e.g.
+    # "Rohit Sharma" + noise from the next line becoming
+    # "Rohit Sharma orm fafer").
     name_match = re.search(
-        r"(?:Name|NAme|NAME)\s*[:\-]?\s*([A-Za-z]+(?:\s+[A-Za-z]+){0,3})",
+        r"(?:Name)[ \t:\-/]*([A-Za-z]+(?:[ \t]+[A-Za-z]+){0,3})",
         text,
         re.IGNORECASE
     )
@@ -49,7 +54,7 @@ def extract_fields(text):
     # -------------------------
 
     dob_match = re.search(
-        r"(?:DOB|Date of Birth|Birth)\s*[:\-]?\s*"
+        r"(?:DOB|Date of Birth|Birth)[ \t:\-]*"
         r"(\d{2}[-/]\d{2}[-/]\d{4})",
         text,
         re.IGNORECASE
@@ -86,7 +91,7 @@ def extract_fields(text):
     # -------------------------
 
     number_match = re.search(
-        r"\b\d{4}\s+\d{4}\s+\d{4}\b",
+        r"\b\d{4}[ \t]+\d{4}[ \t]+\d{4}\b",
         text
     )
 

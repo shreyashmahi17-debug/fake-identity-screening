@@ -12,7 +12,7 @@ from services.data_consistency import check_consistency
 
 import shutil
 import os
-
+import uuid
 
 app = FastAPI(title="Fake Document Screening System")
 
@@ -39,8 +39,22 @@ async def ocr_document(
     document_file: UploadFile = File(...),
     reference_file: UploadFile = File(...)
 ):
-    document_path = f"temp_document_{document_file.filename}"
-    reference_path = f"temp_reference_{reference_file.filename}"
+    # Use only the file extension from the uploaded name (never the raw
+    # filename) and prefix with a per-request UUID. This avoids two
+    # concurrent uploads overwriting each other's temp file, and avoids
+    # writing to an attacker-controlled path (path traversal) if the
+    # filename contains "../" or similar.
+    document_ext = os.path.splitext(
+        os.path.basename(document_file.filename or "")
+    )[1]
+    reference_ext = os.path.splitext(
+        os.path.basename(reference_file.filename or "")
+    )[1]
+
+    request_id = uuid.uuid4().hex
+
+    document_path = f"temp_document_{request_id}{document_ext}"
+    reference_path = f"temp_reference_{request_id}{reference_ext}"
 
     with open(document_path, "wb") as buffer:
         shutil.copyfileobj(document_file.file, buffer)

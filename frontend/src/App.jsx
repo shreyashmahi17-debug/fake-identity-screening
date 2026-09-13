@@ -37,6 +37,31 @@ function getSignalClass(value, mode) {
   return "sig-danger";
 }
 
+/**
+ * Cleans noisy OCR name output. Some OCR engines append stray
+ * garbage tokens after the real name (e.g. "Rohit Sharma orm
+ * fafer"). Real names are Title Case, so we keep words while
+ * they look like a name and stop at the first lowercase /
+ * non-name-like token that follows a valid one.
+ */
+function cleanOcrName(raw) {
+  if (!raw) return raw;
+
+  const words = raw.trim().split(/\s+/);
+  const kept = [];
+
+  for (const word of words) {
+    const isLikelyNameWord = /^[A-Z][a-zA-Z'.-]*$/.test(word);
+    if (isLikelyNameWord) {
+      kept.push(word);
+    } else if (kept.length > 0) {
+      break;
+    }
+  }
+
+  return kept.length > 0 ? kept.join(" ") : raw;
+}
+
 /* ============================================================
    ANIMATED SCORE RING (SVG)
 ============================================================ */
@@ -323,7 +348,7 @@ Data Consistency:    ${risk.risk_breakdown.data_consistency}/10
 
 EXTRACTED INFORMATION
 ---------------------
-Name: ${result.fields.name || "Not detected"}
+Name: ${cleanOcrName(result.fields.name) || "Not detected"}
 Date of Birth: ${result.fields.date_of_birth || "Not detected"}
 Gender: ${result.fields.gender || "Not detected"}
 Document Number: ${result.fields.document_number || "Not detected"}
@@ -406,6 +431,11 @@ END OF REPORT
               <h1>Document Screening System</h1>
               <span>AI-Powered Identity Risk Analysis</span>
             </div>
+          </div>
+
+          <div className="header-status">
+            <span className="status-dot" />
+            Prototype Active
           </div>
         </div>
       </header>
@@ -728,7 +758,7 @@ END OF REPORT
                       <div className="risk-bar">
                         <div
                           className="risk-fill"
-                          style={{ width: `${(value / max) * 100}%` }}
+                          style={{ width: `${Math.max((value / max) * 100, 3)}%` }}
                         />
                       </div>
                       <small>Weight: {weight}</small>
@@ -748,7 +778,7 @@ END OF REPORT
 
                 <div className="info-list">
                   {[
-                    { label: "Name", value: result.fields.name },
+                    { label: "Name", value: cleanOcrName(result.fields.name) },
                     {
                       label: "Date of Birth",
                       value: result.fields.date_of_birth,
@@ -920,3 +950,4 @@ END OF REPORT
 }
 
 export default App;
+

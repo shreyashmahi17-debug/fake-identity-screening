@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import os
+import uuid
 
 
 def detect_tampering(image_path):
@@ -22,20 +23,33 @@ def detect_tampering(image_path):
     # -----------------------------
     # 2. ELA Analysis
     # -----------------------------
-    temp_path = "temp_ela.jpg"
+    # Unique filename per request — a fixed shared filename here would
+    # cause concurrent requests to overwrite each other's temp file
+    # (race condition), corrupting results under load.
+    temp_path = f"temp_ela_{uuid.uuid4().hex}.jpg"
 
-    cv2.imwrite(
-        temp_path,
-        image,
-        [cv2.IMWRITE_JPEG_QUALITY, 90]
-    )
+    try:
+        cv2.imwrite(
+            temp_path,
+            image,
+            [cv2.IMWRITE_JPEG_QUALITY, 90]
+        )
 
-    compressed = cv2.imread(temp_path)
+        compressed = cv2.imread(temp_path)
 
-    difference = cv2.absdiff(
-        image,
-        compressed
-    )
+        if compressed is None:
+            return {
+                "status": "error",
+                "message": "Unable to process image for tampering analysis"
+            }
+
+        difference = cv2.absdiff(
+            image,
+            compressed
+        )
+    finally:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
 
     diff_gray = cv2.cvtColor(
         difference,
@@ -49,9 +63,6 @@ def detect_tampering(image_path):
     max_error = int(
         np.max(diff_gray)
     )
-
-    if os.path.exists(temp_path):
-        os.remove(temp_path)
 
     # -----------------------------
     # 3. Edge Analysis
