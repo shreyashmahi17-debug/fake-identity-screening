@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import "./App.css";
+import { getBackendUrl } from "./config";
 
 /* ============================================================
    HELPERS
@@ -238,9 +239,8 @@ function App() {
     formData.append("reference_file", referenceFile);
 
     try {
-      const backendUrl =
-        import.meta.env.VITE_API_URL ||
-        "https://fake-identity-screening.onrender.com";
+      // HARDCODED fallback via config - works without any env variable
+      const backendUrl = getBackendUrl();
 
       console.log("🔗 Connecting to backend:", backendUrl);
 
@@ -288,13 +288,15 @@ function App() {
       
       console.error("❌ Connection error:", err);
       
+      const backendUrl = getBackendUrl();
+      
       let msg = "";
       if (err.name === "AbortError") {
-        msg = "⏱️ Request timed out. The backend is waking up from sleep (Render free tier). Please wait 30 seconds and try again.";
-      } else if (err.message.includes("Failed to fetch") || err.message.includes("NetworkError")) {
-        msg = `🔌 Network error: Cannot connect to backend. Please check:\n1. Backend is running at: ${import.meta.env.VITE_API_URL || "https://fake-identity-screening.onrender.com"}\n2. CORS is enabled\n3. You have internet connection\n\nError: ${err.message}`;
+        msg = `⏱️ Request timed out. Backend is waking up (Render free tier cold start).\n\n✅ This is NORMAL on first request!\n\nPlease wait 30-60 seconds and try again.`;
+      } else if (err.message.includes("Failed to fetch") || err.message.includes("NetworkError") || err.message.includes("CORS")) {
+        msg = `🔌 Cannot connect to backend.\n\nBackend: ${backendUrl}\n\n✅ Possible reasons:\n1. Backend is sleeping (first request takes 30-60s)\n2. Internet connection issue\n3. Backend is deploying\n\n💡 Solution: Wait 60 seconds and try again!`;
       } else {
-        msg = `❌ Error: ${err.message}\n\nBackend URL: ${import.meta.env.VITE_API_URL || "https://fake-identity-screening.onrender.com"}`;
+        msg = `❌ ${err.message}\n\nBackend: ${backendUrl}`;
       }
       
       setError(msg);
