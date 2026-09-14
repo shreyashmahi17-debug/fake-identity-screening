@@ -477,15 +477,16 @@ body {
 
 .step.active {
   opacity: 1;
-  background: var(--bg-accent);
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15), 0 4px 12px rgba(37, 99, 235, 0.1);
 }
 
 .step.completed {
   opacity: 1;
-  background: var(--success-bg);
-  border-color: var(--success);
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  border: 2px solid var(--success);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
 }
 
 .step-icon {
@@ -531,11 +532,12 @@ body {
 ============================================ */
 
 .error-card {
-  background: var(--danger-bg);
-  border: 1px solid var(--danger);
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  border: 2px solid var(--danger);
   border-radius: var(--radius-md);
   padding: 1.5rem;
   margin-bottom: 2rem;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
 }
 
 .error-card strong {
@@ -579,12 +581,13 @@ body {
 
 .result-badge {
   padding: 0.5rem 1rem;
-  background: var(--success-bg);
-  border: 1px solid var(--success);
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  border: 2px solid var(--success);
   border-radius: 100px;
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--success);
+  color: #047857;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
 }
 
 .screening-summary {
@@ -602,18 +605,33 @@ body {
 }
 
 .screening-summary.low {
-  background: var(--success-bg);
-  border-color: var(--success);
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  border: 2px solid var(--success);
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.2);
+}
+
+.screening-summary.low h2 {
+  color: #047857;
 }
 
 .screening-summary.medium {
-  background: var(--warning-bg);
-  border-color: var(--warning);
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 2px solid var(--warning);
+  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.2);
+}
+
+.screening-summary.medium h2 {
+  color: #d97706;
 }
 
 .screening-summary.high {
-  background: var(--danger-bg);
-  border-color: var(--danger);
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  border: 2px solid var(--danger);
+  box-shadow: 0 8px 24px rgba(239, 68, 68, 0.2);
+}
+
+.screening-summary.high h2 {
+  color: #dc2626;
 }
 
 .summary-content {
@@ -663,10 +681,23 @@ body {
 
 .ring-fill {
   fill: none;
-  stroke: var(--primary);
+  stroke: url(#scoreGradient);
   stroke-width: 6;
   stroke-linecap: round;
   transition: stroke-dashoffset 1s ease-out;
+}
+
+/* SVG Gradient definition - add this to App.jsx if needed */
+.low .ring-fill {
+  stroke: var(--success);
+}
+
+.medium .ring-fill {
+  stroke: var(--warning);
+}
+
+.high .ring-fill {
+  stroke: var(--danger);
 }
 
 .score-inner {
@@ -754,30 +785,36 @@ body {
 }
 
 .signal-card.sig-good {
-  background: var(--success-bg);
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
   border-color: var(--success);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
 }
 
 .signal-card.sig-good strong {
-  color: var(--success);
+  color: #047857;
+  text-shadow: 0 1px 2px rgba(4, 120, 87, 0.1);
 }
 
 .signal-card.sig-warn {
-  background: var(--warning-bg);
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
   border-color: var(--warning);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
 }
 
 .signal-card.sig-warn strong {
-  color: var(--warning);
+  color: #d97706;
+  text-shadow: 0 1px 2px rgba(217, 119, 6, 0.1);
 }
 
 .signal-card.sig-danger {
-  background: var(--danger-bg);
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
   border-color: var(--danger);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
 }
 
 .signal-card.sig-danger strong {
-  color: var(--danger);
+  color: #dc2626;
+  text-shadow: 0 1px 2px rgba(220, 38, 38, 0.1);
 }
 
 /* Results Grid */
@@ -915,12 +952,15 @@ body {
 }
 
 .issue-list li {
-  padding: 0.75rem;
-  background: var(--danger-bg);
-  border-left: 3px solid var(--danger);
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  border-left: 4px solid var(--danger);
   border-radius: var(--radius-sm);
   font-size: 0.875rem;
   color: var(--text-secondary);
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.1);
+  border: 1px solid var(--danger);
+  border-left-width: 4px;
 }
 
 .reasons-card {
@@ -938,9 +978,11 @@ body {
   align-items: flex-start;
   gap: 1rem;
   padding: 1rem;
-  background: var(--danger-bg);
-  border: 1px solid var(--danger);
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  border: 2px solid var(--danger);
+  border-left-width: 4px;
   border-radius: var(--radius-md);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);
 }
 
 .reason-item span {
@@ -1000,12 +1042,14 @@ body {
 .disclaimer {
   margin-top: 2rem;
   padding: 1.5rem;
-  background: var(--warning-bg);
-  border: 1px solid var(--warning);
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 2px solid var(--warning);
+  border-left-width: 4px;
   border-radius: var(--radius-md);
   font-size: 0.875rem;
   color: var(--text-secondary);
   line-height: 1.7;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
 }
 
 .disclaimer strong {
