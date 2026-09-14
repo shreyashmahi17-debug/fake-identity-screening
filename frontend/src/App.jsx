@@ -955,12 +955,6 @@ END OF REPORT
           </section>
         )}
       </main>
-
-      <footer className="footer">
-        <span>AI-Based Fake Identity &amp; Document Screening System</span>
-        <span>•</span>
-        <span>Prototype for Hackathon Demonstration</span>
-      </footer>
     </div>
   );
 }
